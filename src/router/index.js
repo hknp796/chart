@@ -3,6 +3,7 @@ import dynamic from '../components/dynamic.vue'
 import home from '../components/home.vue'
 import newComp from '../components/new.vue'
 import chartjs from '../components/chartjs.vue'
+import line from '../components/line.vue'
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: "/chartjs",
     name: "chartjs",
     component: chartjs,
+  },
+  {
+    path: "/line",
+    name: "line",
+    component: line,
   },
 ];
 
