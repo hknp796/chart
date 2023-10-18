@@ -2,8 +2,7 @@
     <button type="button" @click="toggleBubbleSize">clicke</button>
     {{ scatterData }}
     <div>
-        <component ref="myChart" v-bind:is="chartType" :data="scatterData" :options="options" @click="onClick"></component>
-        <!-- <Chart  :type="chartType"  :data="chartData" :options="options" @click="onClick" /> -->
+        <component ref="myChart" v-bind:is="chartType" :data="scatterData" :options="options" />
     </div>
 </template>
   
@@ -126,8 +125,8 @@ const scatterData = ref({
                 }
             ]
             ,
-            hidden: false
-            // pointRadius: [5, 5, 5, 5],
+            hidden: false,
+            pointRadius: [5, 10, 5, 5],
         },
         {
             label: 'Scatter Dataset 2',
@@ -223,7 +222,7 @@ const options = ref({
     plugins: {
         legend: {
             display: true,
-            // onClick: newLegendClickHandler,
+            onClick: newLegendClickHandler,
             position: 'right'
         },
         // tooltip: {
@@ -278,6 +277,7 @@ const options = ref({
 
 // const chartRef = ref(null);
 const myChart = ref()
+const currentCategoryIndex = ref(null)
 const onClick = (event) => {
     // options.type = 'bar'
     chartType.value = Scatter
@@ -296,38 +296,59 @@ const onClick = (event) => {
     // elementsAtEvent(getElementsAtEvent(chart, event));
 };
 function newLegendClickHandler(e, legendItem, legend) {
-    console.log(legend,'chart');
-    const index = legendItem.datasetIndex;
+    // console.log(legend,'chart');
+    const index = legendItem.datasetIndex
+    if (currentCategoryIndex.value === index) {
+        currentCategoryIndex.value = null
+        scatterData.value = {
+            datasets: scatterData.value.datasets.map((data, i) => {
+                const y = data
+                y.hidden = false
+                return y
+            })
+        }
+        return
+    }
+    currentCategoryIndex.value = index;
     const ci = legend.chart;
-    console.log(legendItem.hidden, 'dd');
-    if (ci.isDatasetVisible(index)) {
+    // console.log(legendItem.hidden, 'dd');
+    if (ci.isDatasetVisible(currentCategoryIndex.value)) {
         // ci.show(index);
         legendItem.hidden = true;
     }
-    console.log(scatterData.value.datasets[0]);
-    scatterData.value.datasets[0].data =
-        [
-            {
-                x: -5,
-                y: -7
-            },
-            {
-                x: -3,
-                y: -3
-            },
-            {
-                x: 3,
-                y: 4
-            },
-            {
-                x: 4,
-                y: -4
-            },
-            {
-                x: 7,
-                y: -5
-            }
-        ]
+    scatterData.value = {
+        datasets: scatterData.value.datasets.map((data, i) => {
+            const y = data
+            if (currentCategoryIndex.value !== i)
+                y.hidden = true
+            else
+                y.hidden = false
+            return y
+        })
+    }
+    // scatterData.value.datasets[0].data =
+    //     [
+    //         {
+    //             x: -5,
+    //             y: -7
+    //         },
+    //         {
+    //             x: -3,
+    //             y: -3
+    //         },
+    //         {
+    //             x: 3,
+    //             y: 4
+    //         },
+    //         {
+    //             x: 4,
+    //             y: -4
+    //         },
+    //         {
+    //             x: 7,
+    //             y: -5
+    //         }
+    //     ]
     // const index = legendItem.datasetIndex;
     // const type = legend.chart.config.type;
     // let ci = legend.chart;
