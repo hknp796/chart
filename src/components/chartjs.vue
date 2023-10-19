@@ -153,10 +153,12 @@ const scatterData = ref({
             label: 'Scatter Dataset 1',
             borderColor: '#f87979',
             backgroundColor: '#f87979',
+            category:'apple',
             data: [
                 {
                     x: -2,
                     y: 4,
+                    model:'iphone'
                 },
                 {
                     x: -1,
@@ -235,24 +237,32 @@ const options = ref({
             onClick: newLegendClickHandler,
             position: 'right'
         },
+        tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const model = context.dataset.data[context.dataIndex].model
+                        return `${context.dataset.category} ${model}` //+ context.formattedValue
+                    }
+                }
+            }
     },
     onClick: pointClick,
 
 })
-const buttonclick = () => {
-    scatterData.value = {
-        datasets: scatterData.value.datasets.map((data, i) => {
-            const y = data
-            // console.log(y.pointRadius);
-            if (y.pointRadius[3] === 10) {
-                y.pointRadius[3] = 5;
-            } else {
-                y.pointRadius[3] = 10;
-            }
-            return y
-        })
-    }
-}
+// const buttonclick = () => {
+//     scatterData.value = {
+//         datasets: scatterData.value.datasets.map((data, i) => {
+//             const y = data
+//             // console.log(y.pointRadius);
+//             if (y.pointRadius[3] === 10) {
+//                 y.pointRadius[3] = 5;
+//             } else {
+//                 y.pointRadius[3] = 10;
+//             }
+//             return y
+//         })
+//     }
+// }
 // setInterval(() => {
 //     buttonclick();
 // }, 500);
@@ -261,31 +271,44 @@ const buttonclick = () => {
 const currentCategoryIndex = ref(null)
 function newLegendClickHandler(e, legendItem, legend) {
     const index = legendItem.datasetIndex
+
     if (currentCategoryIndex.value === index) {
         currentCategoryIndex.value = null
         scatterData.value = {
             datasets: scatterData.value.datasets.map((data, i) => {
                 const y = data
-                y.hidden = false
+                y.pointRadius = [5, 5, 5, 5]
+                if (y.backgroundColor.length === 9) {
+                    y.backgroundColor = y.backgroundColor.slice(0,-2)
+                }
+                // y.hidden = false
                 return y
             })
         }
         return
     }
     currentCategoryIndex.value = index;
-    const ci = legend.chart;
-    if (ci.isDatasetVisible(currentCategoryIndex.value)) {
-        legendItem.hidden = true;
-    }
+    // const ci = legend.chart;
+    // if (ci.isDatasetVisible(currentCategoryIndex.value)) {
+    //     legendItem.hidden = true;
+    // }
     scatterData.value = {
         datasets: scatterData.value.datasets.map((data, i) => {
             console.log(data);
             const y = data
-            y.pointRadius = [10, 10, 10, 10]
-            if (currentCategoryIndex.value !== i)
-                y.hidden = true
-            else
-                y.hidden = false
+            if (currentCategoryIndex.value !== i){
+                // console.log(y,'y');
+                y.backgroundColor = y.backgroundColor+'33'
+                y.pointRadius = [3, 3, 3, 3]
+            }
+            else {
+                if (y.backgroundColor.length === 9) {
+                    // console.log(y.backgroundColor.length)
+                    y.backgroundColor = y.backgroundColor.slice(0,-2)
+                }
+                y.pointRadius = [10, 10, 10, 10]
+                // y.hidden = false
+            }
             return y
         })
     }
