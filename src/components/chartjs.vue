@@ -127,6 +127,35 @@ const responseData = ref([
         id:12
     }
 ])
+
+const chartOptions = ref({
+    datasets: []
+})
+const colors = [
+    {
+        borderColor: '#7acbf9',
+        backgroundColor: '#7acbf9',
+    }
+]
+const shapes = ['rect']
+responseData.value.forEach(({ category, ...data }, index) => {
+    if (!chartOptions.value.datasets.some(({ label }) => label === category))
+        chartOptions.value.datasets.push({
+            label: category,
+            fill: false,
+            data: [{ category, ...data }],
+            pointRadius: [],
+            hidden: false,
+            pointStyle: shapes[index],
+            ...colors[index],
+        })
+    else {
+        const dataset = chartOptions.value.datasets.find(({ label }) => label === category)
+        dataset.data.push({ category, ...data })
+    }
+})
+console.log(chartOptions.value)
+
 const groupedData = responseData.value.reduce((result, item) => {
     const category = item.category;
     if (!result[category]) {
@@ -145,7 +174,7 @@ const filteredArray = Object.values(groupedData).map(group => {
 });
 
 // console.log(filteredArray);
-console.log(groupedData);
+// console.log(groupedData);
 let chartType = ref(Scatter)
 const scatterData = ref({
     datasets: [
