@@ -1,7 +1,7 @@
 <template>
     <button @click="buttonclick"> clicke</button>
     <div>
-        <component v-bind:is="chartType" :data="scatterData" :options="options" />
+        <component v-bind:is="chartType"  :data="chartOptions" :options="options" />
     </div>
     <table>
         <tr>
@@ -10,12 +10,12 @@
             <th>X</th>
             <th>Y</th>
         </tr>
-        <tr v-for="i in responseData" :key="i">
+        <tr v-for="i in tableData" :key="i">
             <td>{{ i.model }}</td>
             <td>{{ i.category }}</td>
             <td>{{ i.x }}</td>
             <td>{{ i.y }}</td>
-            <td><button>show</button></td>
+            <td><button @click="showInChart(i)">show</button></td>
         </tr>
     </table>
 </template>
@@ -43,90 +43,91 @@ const responseData = ref([
     {
         "model": "iphone x",
         "category": "apple",
-        "x": 1,
-        "y": 2,
+        x: 1,
+        y: 2,
         id:1
     },
     {
         "model": "iphone 12",
         "category": "apple",
-        "x": 2,
-        "y": 3,
+        x: 2,
+        y: 3,
         id:2
 
     },
     {
         "model": "samsung s22",
         "category": "samsung",
-        "x": 3,
-        "y": 4,
+        x: 3,
+        y: 4,
         id:3
     },
     {
         "model": "iphone 13",
         "category": "apple",
-        "x": 4,
-        "y": 5,
+        x: 4,
+        y: 5,
         id:4
 
     },
     {
         "model": "sony 10",
         "category": "sony",
-        "x": 4,
-        "y": 3,
+        x: 4.5,
+        y: 3,
         id:5
     },
     {
         "model": "sony 11",
         "category": "sony",
-        "x": 6,
-        "y": 2,
+        x: 6,
+        y: 2,
         id:6
     },
     {
         "model": "xperia",
         "category": "sony",
-        "x": 8,
-        "y": 4,
+        x: 8,
+        y: 4,
         id:7
     },
     {
         "model": "samsung s20" ,
         "category": "samsung",
-        "x": 4,
-        "y": 4,
+        x: 3.5,
+        y: 4,
         id:8
     },
     {
         "model": "iphone 14 256" ,
         "category": "apple",
-        "x": 3,
-        "y": 2,
+        x: 3,
+        y: 2,
         id:9
     },
     {
         "model": "samsung s19" ,
         "category": "samsung",
-        "x": 5,
-        "y": 4,
+        x: 5,
+        y: 4,
         id:10
     },
     {
         "model": "samsung A20" ,
         "category": "samsung",
-        "x": 4,
-        "y": 3,
+        x: 4,
+        y: 3,
         id:11
     },
     {
         "model": "xpearia s40" ,
         "category": "sony",
-        "x": 3,
-        "y": 3,
+        x: 3,
+        y: 3,
         id:12
     }
 ])
+const tableData = ref(responseData.value)
 
 const chartOptions = ref({
     datasets: []
@@ -135,46 +136,48 @@ const colors = [
     {
         borderColor: '#7acbf9',
         backgroundColor: '#7acbf9',
+    },
+    {
+        borderColor: '#f87979',
+        backgroundColor: '#f87979',
+    },
+    {
+        borderColor: '#008000',
+        backgroundColor: '#008000',
+    },
+
+    {
+        borderColor: '#ff0000',
+        backgroundColor: '#ff0000',
+    },
+    {
+        borderColor: '#ff0000',
+        backgroundColor: '#ff0000',
     }
 ]
-const shapes = ['rect']
+const shapes = ['rect','triangle','triangle']
 responseData.value.forEach(({ category, ...data }, index) => {
-    if (!chartOptions.value.datasets.some(({ label }) => label === category))
+    if (!chartOptions.value.datasets.some(({ label }) => label === category)){
+
         chartOptions.value.datasets.push({
             label: category,
             fill: false,
-            data: [{ category, ...data }],
-            pointRadius: [],
-            hidden: false,
-            pointStyle: shapes[index],
             ...colors[index],
+            data: [{category,  ...data }],
+            hidden: false,
+            pointRadius:[5],
+            pointStyle: shapes[index],
         })
+    }
     else {
         const dataset = chartOptions.value.datasets.find(({ label }) => label === category)
-        dataset.data.push({ category, ...data })
+        dataset.data.push({category, ...data })
     }
 })
-console.log(chartOptions.value)
 
-const groupedData = responseData.value.reduce((result, item) => {
-    const category = item.category;
-    if (!result[category]) {
-        result[category] = [];
-    }
-    result[category].push(item);
-    return result;
-}, {});
-const filteredArray = Object.values(groupedData).map(group => {
-    const filteredObj = {};
-    group.forEach(item => {
-        filteredObj.x = item.x;
-        filteredObj.y = item.y;
-    });
-    return filteredObj;
-});
 
-// console.log(filteredArray);
-// console.log(groupedData);
+
+
 let chartType = ref(Scatter)
 const scatterData = ref({
     datasets: [
@@ -242,11 +245,10 @@ const scatterData = ref({
         },
     ]
 })
+
+console.log(chartOptions.value)
+// console.log(scatterData.value)
 const pointClick = (e, a, b) => {
-    console.log(e, a, b);
-    console.log(
-        // b.ctx.canvas.style.scale = 3
-    );
     // console.log(a[0].index);
     // scatterData.value = {
     //         datasets: scatterData.value.datasets.map((data, i) => {
@@ -257,6 +259,10 @@ const pointClick = (e, a, b) => {
     //         })
     //     }
 }
+
+const showInChart = (item)=>{
+console.log({item});
+}
 const options = ref({
     responsive: true,
     maintainAspectRatio: false,
@@ -264,8 +270,8 @@ const options = ref({
         legend: {
             display: true,
             onClick: newLegendClickHandler,
-            position: 'right'
-        },
+            position: 'right',
+            },
         tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -278,65 +284,46 @@ const options = ref({
     onClick: pointClick,
 
 })
-// const buttonclick = () => {
-//     scatterData.value = {
-//         datasets: scatterData.value.datasets.map((data, i) => {
-//             const y = data
-//             // console.log(y.pointRadius);
-//             if (y.pointRadius[3] === 10) {
-//                 y.pointRadius[3] = 5;
-//             } else {
-//                 y.pointRadius[3] = 10;
-//             }
-//             return y
-//         })
-//     }
-// }
-// setInterval(() => {
-//     buttonclick();
-// }, 500);
+const buttonclick = () => {
 
+}
 
 const currentCategoryIndex = ref(null)
 function newLegendClickHandler(e, legendItem, legend) {
+    tableData.value = chartOptions.value.datasets[legendItem.datasetIndex].data
     const index = legendItem.datasetIndex
 
     if (currentCategoryIndex.value === index) {
         currentCategoryIndex.value = null
-        scatterData.value = {
-            datasets: scatterData.value.datasets.map((data, i) => {
+        chartOptions.value = {
+            datasets: chartOptions.value.datasets.map((data, i) => {
                 const y = data
+                tableData.value = responseData.value
                 y.pointRadius = [5, 5, 5, 5]
                 if (y.backgroundColor.length === 9) {
                     y.backgroundColor = y.backgroundColor.slice(0,-2)
                 }
-                // y.hidden = false
                 return y
             })
         }
         return
     }
     currentCategoryIndex.value = index;
-    // const ci = legend.chart;
-    // if (ci.isDatasetVisible(currentCategoryIndex.value)) {
-    //     legendItem.hidden = true;
-    // }
-    scatterData.value = {
-        datasets: scatterData.value.datasets.map((data, i) => {
-            console.log(data);
+    chartOptions.value = {
+        datasets: chartOptions.value.datasets.map((data, i) => {
             const y = data
             if (currentCategoryIndex.value !== i){
-                // console.log(y,'y');
+                if (y.backgroundColor.length === 9) {
+                    y.backgroundColor = y.backgroundColor.slice(0,-2)
+                }
                 y.backgroundColor = y.backgroundColor+'33'
                 y.pointRadius = [3, 3, 3, 3]
             }
             else {
                 if (y.backgroundColor.length === 9) {
-                    // console.log(y.backgroundColor.length)
                     y.backgroundColor = y.backgroundColor.slice(0,-2)
                 }
                 y.pointRadius = [10, 10, 10, 10]
-                // y.hidden = false
             }
             return y
         })
