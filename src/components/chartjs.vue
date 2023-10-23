@@ -1,5 +1,7 @@
 <template>
-    <button @click="buttonclick"> clicke</button>
+    <button @click="resetClick">
+        Reset
+    </button>
     <div>
         <component v-bind:is="chartType"  :data="chartOptions" :options="options" />
     </div>
@@ -15,7 +17,7 @@
             <td>{{ i.category }}</td>
             <td>{{ i.x }}</td>
             <td>{{ i.y }}</td>
-            <td><button @click="showInChart(i)">show</button></td>
+            <td><button @click="showInChart(i)">Show</button></td>
         </tr>
     </table>
 </template>
@@ -260,8 +262,19 @@ const pointClick = (e, a, b) => {
     //     }
 }
 
-const showInChart = (item)=>{
-console.log({item});
+const showInChart = ({ id }) => {
+    resetClick()
+    tableData.value = tableData.value.filter(({ id: itemId }) => id === itemId)
+    chartOptions.value = {
+        datasets: chartOptions.value.datasets.map((data) => {
+            data.pointRadius = data.data.map(({ id: dataId }) => dataId === id ? 10 : 3)
+            const hasPoint = data.data.some(({ id: dataId }) => dataId === id)
+            if (!hasPoint)
+                data.backgroundColor = data.backgroundColor+'33'
+            return data
+        })
+    }
+    // console.log(chartOptions.value)
 }
 const options = ref({
     responsive: true,
@@ -284,8 +297,19 @@ const options = ref({
     onClick: pointClick,
 
 })
-const buttonclick = () => {
-
+const resetClick = () => {
+    tableData.value = responseData.value
+    chartOptions.value = {
+        datasets: chartOptions.value.datasets.map((data, i) => {
+            const y = data
+            tableData.value = responseData.value
+            y.pointRadius = [5, 5, 5, 5]
+            if (y.backgroundColor.length === 9) {
+                y.backgroundColor = y.backgroundColor.slice(0,-2)
+            }
+            return y
+        })
+    }
 }
 
 const currentCategoryIndex = ref(null)
