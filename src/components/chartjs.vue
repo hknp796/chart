@@ -250,16 +250,11 @@ const scatterData = ref({
 
 console.log(chartOptions.value)
 // console.log(scatterData.value)
-const pointClick = (e, a, b) => {
-    // console.log(a[0].index);
-    // scatterData.value = {
-    //         datasets: scatterData.value.datasets.map((data, i) => {
-    //             const y = data
-    //             console.log(y.pointRadius);
-    //             y.pointRadius[a[0].index] = 10
-    //             return y
-    //         })
-    //     }
+
+const pointClick = (e, a) => {
+    if (!a.length) return
+    const { index, datasetIndex } = a[0]
+    showInChart(chartOptions.value.datasets[datasetIndex].data[index])
 }
 
 const showInChart = ({ id }) => {
