@@ -3,7 +3,7 @@
         Reset
     </button>
     <div>
-        <component v-bind:is="chartType"  :data="chartOptions" :options="options" />
+        <component v-bind:is="chartType" :data="chartOptions" :options="options" />
     </div>
     <table>
         <tr>
@@ -23,23 +23,31 @@
 </template>
   
 <script  setup>
+import annotationPlugin from 'chartjs-plugin-annotation';
 import { ref } from 'vue';
 import {
     Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
     Title,
     Tooltip,
     Legend,
-    PointElement
+    PointElement,
+    LineElement,
 } from 'chart.js';
 import {
-    Scatter,
+    Scatter, Line
 } from 'vue-chartjs';
 
 ChartJS.register(
+    CategoryScale,
+    LinearScale,
     Title,
     Tooltip,
     Legend,
-    PointElement
+    PointElement,
+    LineElement,
+    annotationPlugin
 );
 const responseData = ref([
     {
@@ -47,14 +55,14 @@ const responseData = ref([
         "category": "apple",
         x: 1,
         y: 2,
-        id:1
+        id: 1
     },
     {
         "model": "iphone 12",
         "category": "apple",
         x: 2,
         y: 3,
-        id:2
+        id: 2
 
     },
     {
@@ -62,14 +70,14 @@ const responseData = ref([
         "category": "samsung",
         x: 3,
         y: 4,
-        id:3
+        id: 3
     },
     {
         "model": "iphone 13",
         "category": "apple",
         x: 4,
         y: 5,
-        id:4
+        id: 4
 
     },
     {
@@ -77,58 +85,59 @@ const responseData = ref([
         "category": "sony",
         x: 4.5,
         y: 3,
-        id:5
+        id: 5
     },
     {
         "model": "sony 11",
         "category": "sony",
         x: 6,
         y: 2,
-        id:6
+        id: 6
     },
     {
         "model": "xperia",
         "category": "sony",
         x: 8,
         y: 4,
-        id:7
+        id: 7
     },
     {
-        "model": "samsung s20" ,
+        "model": "samsung s20",
         "category": "samsung",
         x: 3.5,
         y: 4,
-        id:8
+        id: 8
     },
     {
-        "model": "iphone 14 256" ,
+        "model": "iphone 14 256",
         "category": "apple",
         x: 3,
         y: 2,
-        id:9
+        id: 9
     },
     {
-        "model": "samsung s19" ,
+        "model": "samsung s19",
         "category": "samsung",
         x: 5,
         y: 4,
-        id:10
+        id: 10
     },
     {
-        "model": "samsung A20" ,
+        "model": "samsung A20",
         "category": "samsung",
         x: 4,
         y: 3,
-        id:11
+        id: 11
     },
     {
-        "model": "xpearia s40" ,
+        "model": "xpearia s40",
         "category": "sony",
         x: 3,
         y: 3,
-        id:12
+        id: 12
     }
 ])
+
 const tableData = ref(responseData.value)
 
 const chartOptions = ref({
@@ -157,26 +166,26 @@ const colors = [
         backgroundColor: '#ff0000',
     }
 ]
-const shapes = ['rect','triangle','triangle']
+const shapes = ['rect', 'triangle', 'triangle']
 responseData.value.forEach(({ category, ...data }, index) => {
-    if (!chartOptions.value.datasets.some(({ label }) => label === category)){
+    if (!chartOptions.value.datasets.some(({ label }) => label === category)) {
 
         chartOptions.value.datasets.push({
             label: category,
             fill: false,
             ...colors[index],
-            data: [{category,  ...data }],
+            data: [{ category, ...data }],
             hidden: false,
-            pointRadius:[5],
+            pointRadius: [5],
             pointStyle: shapes[index],
-        })
+        },
+        )
     }
     else {
         const dataset = chartOptions.value.datasets.find(({ label }) => label === category)
-        dataset.data.push({category, ...data })
+        dataset.data.push({ category, ...data })
     }
 })
-
 
 
 
@@ -187,12 +196,12 @@ const scatterData = ref({
             label: 'Scatter Dataset 1',
             borderColor: '#f87979',
             backgroundColor: '#f87979',
-            category:'apple',
+            category: 'apple',
             data: [
                 {
                     x: -2,
                     y: 4,
-                    model:'iphone'
+                    model: 'iphone'
                 },
                 {
                     x: -1,
@@ -219,7 +228,7 @@ const scatterData = ref({
             fill: false,
             borderColor: '#7acbf9',
             backgroundColor: '#7acbf9',
-            pointStyle:'rect',
+            pointStyle: 'rect',
             data: [
                 {
                     x: -2,
@@ -249,7 +258,6 @@ const scatterData = ref({
 })
 
 console.log(chartOptions.value)
-// console.log(scatterData.value)
 
 const pointClick = (e, a) => {
     if (!a.length) return
@@ -265,29 +273,61 @@ const showInChart = ({ id }) => {
             data.pointRadius = data.data.map(({ id: dataId }) => dataId === id ? 10 : 3)
             const hasPoint = data.data.some(({ id: dataId }) => dataId === id)
             if (!hasPoint)
-                data.backgroundColor = data.backgroundColor+'33'
+                data.backgroundColor = data.backgroundColor + '33'
             return data
         })
     }
-    // console.log(chartOptions.value)
 }
 const options = ref({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
+        annotation: {
+            annotations: {
+                line1: {
+                    type: 'line',
+                    yMin: 3,
+                    yMax: 3,
+                    borderColor: '#000',
+                    borderWidth: 1,
+                },
+                line2: {
+                    type: 'line',
+                    xMin: 2,
+                    xMax: 2,
+                    borderColor: '#000',
+                    borderWidth: 1,
+                }
+            }
+        },
         legend: {
             display: true,
             onClick: newLegendClickHandler,
             position: 'right',
-            },
+            labels: {
+                usePointStyle: true
+            }
+        },
         tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const model = context.dataset.data[context.dataIndex].model
-                        return `${context.dataset.category} ${model}` //+ context.formattedValue
-                    }
+            callbacks: {
+                label: function (context) {
+                    const model = context.dataset.data[context.dataIndex].model
+                    return `${context.dataset.category} ${model}` //+ context.formattedValue
                 }
             }
+        }
+    },
+    scales: {
+        x: {
+            grid: {
+                display: false
+            }
+        },
+        y: {
+            grid: {
+                display: false
+            }
+        }
     },
     onClick: pointClick,
 
@@ -300,7 +340,7 @@ const resetClick = () => {
             tableData.value = responseData.value
             y.pointRadius = [5, 5, 5, 5]
             if (y.backgroundColor.length === 9) {
-                y.backgroundColor = y.backgroundColor.slice(0,-2)
+                y.backgroundColor = y.backgroundColor.slice(0, -2)
             }
             return y
         })
@@ -314,33 +354,22 @@ function newLegendClickHandler(e, legendItem, legend) {
 
     if (currentCategoryIndex.value === index) {
         currentCategoryIndex.value = null
-        chartOptions.value = {
-            datasets: chartOptions.value.datasets.map((data, i) => {
-                const y = data
-                tableData.value = responseData.value
-                y.pointRadius = [5, 5, 5, 5]
-                if (y.backgroundColor.length === 9) {
-                    y.backgroundColor = y.backgroundColor.slice(0,-2)
-                }
-                return y
-            })
-        }
-        return
+        return resetClick()
     }
     currentCategoryIndex.value = index;
     chartOptions.value = {
         datasets: chartOptions.value.datasets.map((data, i) => {
             const y = data
-            if (currentCategoryIndex.value !== i){
+            if (currentCategoryIndex.value !== i) {
                 if (y.backgroundColor.length === 9) {
-                    y.backgroundColor = y.backgroundColor.slice(0,-2)
+                    y.backgroundColor = y.backgroundColor.slice(0, -2)
                 }
-                y.backgroundColor = y.backgroundColor+'33'
+                y.backgroundColor = y.backgroundColor + '33'
                 y.pointRadius = [3, 3, 3, 3]
             }
             else {
                 if (y.backgroundColor.length === 9) {
-                    y.backgroundColor = y.backgroundColor.slice(0,-2)
+                    y.backgroundColor = y.backgroundColor.slice(0, -2)
                 }
                 y.pointRadius = [10, 10, 10, 10]
             }
