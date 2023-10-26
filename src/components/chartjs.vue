@@ -1,25 +1,46 @@
 <template>
-    <button @click="resetClick">
-        Reset
-    </button>
     <div>
-        <component v-bind:is="chartType" :data="chartOptions" :options="options" />
+        <button @click="resetClick">
+            Reset
+        </button>
+        <div class="container">
+            <div class="chart-container">
+                <component v-bind:is="chartType" :data="chartOptions" :options="options" />
+            </div>
+            <div class="table-container">
+            
+                <table class="custom-table">
+                    <tr class="custom-row">
+                        <th class="" v-for="head, index in tableHeader" :key="index">{{ head }}</th>
+                    </tr>
+                    <tr class="custom-row" v-for="segment, index in segmentData" :key="index">
+                        <td class="table-cell1">
+                            <div :class="segment.icon"></div> <strong> {{ segment.segment }}</strong>
+                        </td>
+                        <td class="table-cell">{{ segment.products }}</td>
+                        <td class="table-cell">{{ segment.volume }}</td>
+                        <td class="table-cell">{{ segment.segmentation }}</td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <th>Model</th>
+                        <th>Category</th>
+                        <th>X</th>
+                        <th>Y</th>
+                    </tr>
+                    <tr v-for="i in tableData" :key="i">
+                        <td>{{ i.model }}</td>
+                        <td>{{ i.category }}</td>
+                        <td>{{ i.x }}</td>
+                        <td>{{ i.y }}</td>
+                        <td><button @click="showInChart(i)">Show</button></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
     </div>
-    <table>
-        <tr>
-            <th>Model</th>
-            <th>Category</th>
-            <th>X</th>
-            <th>Y</th>
-        </tr>
-        <tr v-for="i in tableData" :key="i">
-            <td>{{ i.model }}</td>
-            <td>{{ i.category }}</td>
-            <td>{{ i.x }}</td>
-            <td>{{ i.y }}</td>
-            <td><button @click="showInChart(i)">Show</button></td>
-        </tr>
-    </table>
 </template>
   
 <script  setup>
@@ -166,6 +187,10 @@ const colors = [
         backgroundColor: '#ff0000',
     }
 ]
+
+const tableHeader = ['Segment', 'Number of Products', 'Total weekly volume', 'Preliminary segmentation']
+
+const segmentData = [{ segment: 'Hg', products: 100, volume: 100, segmentation: 'Made to forcast', icon: 'square' }, { segment: 'Hg', products: 100, volume: 100, segmentation: 'Made to forcast', icon: 'circle' }, { segment: 'Hg', products: 100, volume: 100, segmentation: 'Made to forcast', icon: 'triangle' },]
 const shapes = ['rect', 'triangle', 'triangle']
 responseData.value.forEach(({ category, ...data }, index) => {
     if (!chartOptions.value.datasets.some(({ label }) => label === category)) {
@@ -188,108 +213,108 @@ responseData.value.forEach(({ category, ...data }, index) => {
 })
 
 const getOrCreateTooltip = (chart) => {
-  let tooltipEl = chart.canvas.parentNode.querySelector('div');
+    let tooltipEl = chart.canvas.parentNode.querySelector('div');
 
-  if (!tooltipEl) {
-    tooltipEl = document.createElement('div');
-    tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
-    tooltipEl.style.borderRadius = '3px';
-    tooltipEl.style.color = 'white';
-    tooltipEl.style.opacity = 1;
-    tooltipEl.style.pointerEvents = 'none';
-    tooltipEl.style.position = 'absolute';
-    tooltipEl.style.transform = 'translate(-50%, 0)';
-    tooltipEl.style.transition = 'all .1s ease';
+    if (!tooltipEl) {
+        tooltipEl = document.createElement('div');
+        tooltipEl.style.background = 'rgba(0, 0, 0, 0.7)';
+        tooltipEl.style.borderRadius = '3px';
+        tooltipEl.style.color = 'white';
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.pointerEvents = 'none';
+        tooltipEl.style.position = 'absolute';
+        tooltipEl.style.transform = 'translate(-50%, 0)';
+        tooltipEl.style.transition = 'all .1s ease';
 
-    const table = document.createElement('table');
-    table.style.margin = '0px';
+        const table = document.createElement('table');
+        table.style.margin = '0px';
 
-    tooltipEl.appendChild(table);
-    chart.canvas.parentNode.appendChild(tooltipEl);
-  }
+        tooltipEl.appendChild(table);
+        chart.canvas.parentNode.appendChild(tooltipEl);
+    }
 
-  return tooltipEl;
+    return tooltipEl;
 };
 
 const externalTooltipHandler = (context) => {
-  // Tooltip Element
-  const {chart, tooltip} = context;
-  const tooltipEl = getOrCreateTooltip(chart);
+    // Tooltip Element
+    const { chart, tooltip } = context;
+    const tooltipEl = getOrCreateTooltip(chart);
 
-  // Hide if no tooltip
-  if (tooltip.opacity === 0) {
-    tooltipEl.style.opacity = 0;
-    return;
-  }
-
-  // Set Text
-  if (tooltip.body) {
-    const titleLines = tooltip.title || [];
-    const bodyLines = tooltip.body.map(b => b.lines);
-
-    const tableHead = document.createElement('thead');
-
-    titleLines.forEach(title => {
-      const tr = document.createElement('tr');
-      tr.style.borderWidth = 0;
-
-      const th = document.createElement('th');
-      th.style.borderWidth = 0;
-      const text = document.createTextNode(title);
-
-      th.appendChild(text);
-      tr.appendChild(th);
-      tableHead.appendChild(tr);
-    });
-
-    const tableBody = document.createElement('tbody');
-    bodyLines.forEach((body, i) => {
-      const colors = tooltip.labelColors[i];
-
-      const span = document.createElement('span');
-      span.style.background = colors.backgroundColor;
-      span.style.borderColor = colors.borderColor;
-      span.style.borderWidth = '2px';
-      span.style.marginRight = '10px';
-      span.style.height = '10px';
-      span.style.width = '10px';
-      span.style.display = 'inline-block';
-
-      const tr = document.createElement('tr');
-      tr.style.backgroundColor = 'inherit';
-      tr.style.borderWidth = 0;
-
-      const td = document.createElement('td');
-      td.style.borderWidth = 0;
-
-      const text = document.createTextNode(body);
-
-      td.appendChild(span);
-      td.appendChild(text);
-      tr.appendChild(td);
-      tableBody.appendChild(tr);
-    });
-
-    const tableRoot = tooltipEl.querySelector('table');
-
-    // Remove old children
-    while (tableRoot.firstChild) {
-      tableRoot.firstChild.remove();
+    // Hide if no tooltip
+    if (tooltip.opacity === 0) {
+        tooltipEl.style.opacity = 0;
+        return;
     }
 
-    // Add new children
-    tableRoot.appendChild(tableHead);
-    tableRoot.appendChild(tableBody);
-  }
+    // Set Text
+    if (tooltip.body) {
+        const titleLines = tooltip.title || [];
+        const bodyLines = tooltip.body.map(b => b.lines);
 
-  const {offsetLeft: positionX, offsetTop: positionY} = chart.canvas;
+        const tableHead = document.createElement('thead');
 
-//   // Display, position, and set styles for font
-  tooltipEl.style.opacity = 1;
-  tooltipEl.style.left = positionX + tooltip.caretX + 'px';
-  tooltipEl.style.top = positionY + tooltip.caretY + 'px';
-  tooltipEl.style.font = tooltip.options.bodyFont.string;
-  tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
+        titleLines.forEach(title => {
+            const tr = document.createElement('tr');
+            tr.style.borderWidth = 0;
+
+            const th = document.createElement('th');
+            th.style.borderWidth = 0;
+            const text = document.createTextNode(title);
+
+            th.appendChild(text);
+            tr.appendChild(th);
+            tableHead.appendChild(tr);
+        });
+
+        const tableBody = document.createElement('tbody');
+        bodyLines.forEach((body, i) => {
+            const colors = tooltip.labelColors[i];
+
+            const span = document.createElement('span');
+            span.style.background = colors.backgroundColor;
+            span.style.borderColor = colors.borderColor;
+            span.style.borderWidth = '2px';
+            span.style.marginRight = '10px';
+            span.style.height = '10px';
+            span.style.width = '10px';
+            span.style.display = 'inline-block';
+
+            const tr = document.createElement('tr');
+            tr.style.backgroundColor = 'inherit';
+            tr.style.borderWidth = 0;
+
+            const td = document.createElement('td');
+            td.style.borderWidth = 0;
+
+            const text = document.createTextNode(body);
+
+            td.appendChild(span);
+            td.appendChild(text);
+            tr.appendChild(td);
+            tableBody.appendChild(tr);
+        });
+
+        const tableRoot = tooltipEl.querySelector('table');
+
+        // Remove old children
+        while (tableRoot.firstChild) {
+            tableRoot.firstChild.remove();
+        }
+
+        // Add new children
+        tableRoot.appendChild(tableHead);
+        tableRoot.appendChild(tableBody);
+    }
+
+    const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
+
+    //   // Display, position, and set styles for font
+    tooltipEl.style.opacity = 1;
+    tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+    tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+    tooltipEl.style.font = tooltip.options.bodyFont.string;
+    tooltipEl.style.padding = tooltip.options.padding + 'px ' + tooltip.options.padding + 'px';
 };
 
 let chartType = ref(Scatter)
@@ -383,7 +408,7 @@ const showInChart = ({ id }) => {
 }
 const options = ref({
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
     plugins: {
         annotation: {
             annotations: {
@@ -412,9 +437,9 @@ const options = ref({
             }
         },
         tooltip: {
-        enabled: false,
-        position: 'nearest',
-        external: externalTooltipHandler,
+            enabled: false,
+            position: 'nearest',
+            external: externalTooltipHandler,
             // callbacks: {
             //     label: function (context) {
             //         const model = context.dataset.data[context.dataIndex].model
@@ -487,10 +512,19 @@ function newLegendClickHandler(e, legendItem, legend) {
 
 </script>
 <style>
+.container {
+    display: flex;
+}
+.chart-container{
+    min-width: 71%;
+}
+
 table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
+    border: 1px solid black;
+
 }
 
 td,
@@ -500,7 +534,48 @@ th {
     padding: 8px;
 }
 
-tr:nth-child(even) {
-    background-color: #dddddd;
+table.custom-table {
+    border-collapse: collapse;
+    width: 400px;
+    margin-bottom: 10px;
+}
+
+table.custom-table,
+th,
+td {
+    border: 1px solid black;
+}
+
+th,
+td {
+    border: none;
+    padding: 10px;
+    text-align: center;
+}
+
+.table-cell1 {
+    display: flex;
+    gap: 10px;
+}
+
+.triangle {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid #008000;
+}
+
+.square {
+    height: 20px;
+    width: 20px;
+    background-color: #7acbf9;
+}
+
+.circle {
+    height: 20px;
+    width: 20px;
+    background-color: #ff0000;
+    border-radius: 50%;
 }
 </style>
